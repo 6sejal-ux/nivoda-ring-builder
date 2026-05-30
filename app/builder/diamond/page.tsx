@@ -9,83 +9,24 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Spinner } from '@/components/ui/spinner'
 import { useRing } from '@/lib/ring-context'
-import { ChevronRight, Filter } from 'lucide-react'
+import { ChevronRight, Filter, AlertCircle } from 'lucide-react'
+import type { NivodaDiamond } from '@/lib/nivoda'
 
 const SHAPES = ['Round', 'Princess', 'Cushion', 'Emerald', 'Oval', 'Pear', 'Radiant']
 const COLORS = ['D', 'E', 'F', 'G', 'H', 'I', 'J']
 const CLARITY = ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2']
 const CUTS = ['Excellent', 'Very Good', 'Good', 'Fair']
 
-// Mock diamond data - will be replaced with API call
-const MOCK_DIAMONDS = [
-  {
-    id: '1',
-    shape: 'Round',
-    carat: 1.0,
-    color: 'F',
-    clarity: 'VS1',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 5200,
-  },
-  {
-    id: '2',
-    shape: 'Round',
-    carat: 1.5,
-    color: 'G',
-    clarity: 'VS2',
-    cut: 'Very Good',
-    lab_grown: false,
-    price: 8500,
-  },
-  {
-    id: '3',
-    shape: 'Princess',
-    carat: 1.0,
-    color: 'F',
-    clarity: 'VVS2',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 5800,
-  },
-  {
-    id: '4',
-    shape: 'Cushion',
-    carat: 1.2,
-    color: 'E',
-    clarity: 'VS1',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 6200,
-  },
-  {
-    id: '5',
-    shape: 'Round',
-    carat: 2.0,
-    color: 'H',
-    clarity: 'SI1',
-    cut: 'Very Good',
-    lab_grown: true,
-    price: 8900,
-  },
-  {
-    id: '6',
-    shape: 'Oval',
-    carat: 1.5,
-    color: 'G',
-    clarity: 'VVS1',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 9200,
-  },
-]
-
 export default function ChooseDiamond() {
   const { ring, updateRing } = useRing()
-  const [diamonds, setDiamonds] = useState(MOCK_DIAMONDS)
+  const [diamonds, setDiamonds] = useState<NivodaDiamond[]>([])
+  const [filteredDiamonds, setFilteredDiamonds] = useState<NivodaDiamond[]>([])
   const [selectedDiamond, setSelectedDiamond] = useState<string | null>(ring.diamond?.id || null)
   const [showFilters, setShowFilters] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Filters
   const [shape, setShape] = useState<string>('all-shapes')
@@ -96,23 +37,52 @@ export default function ChooseDiamond() {
   const [caratRange, setCaratRange] = useState<[number, number]>([0.5, 3.0])
   const [labGrown, setLabGrown] = useState(false)
 
+  // Fetch diamonds when filters change
   useEffect(() => {
-    // Filter diamonds based on selected criteria
-    let filtered = MOCK_DIAMONDS.filter((diamond) => {
-      if (shape !== 'all-shapes' && diamond.shape !== shape) return false
-      if (color !== 'all-colors' && diamond.color !== color) return false
-      if (clarity !== 'all-clarities' && diamond.clarity !== clarity) return false
-      if (cut !== 'all-cuts' && diamond.cut !== cut) return false
-      if (diamond.price < priceRange[0] || diamond.price > priceRange[1]) return false
-      if (diamond.carat < caratRange[0] || diamond.carat > caratRange[1]) return false
-      if (labGrown && !diamond.lab_grown) return false
-      return true
-    })
+    const fetchDiamonds = async () => {
+      setLoading(true)
+      setError(null)
 
-    setDiamonds(filtered)
+      try {
+        // Build query params
+        const params = new URLSearchParams()
+        if (shape !== 'all-shapes') params.append('shape', shape)
+        if (color !== 'all-colors') params.append('color', color)
+        if (clarity !== 'all-clarities') params.append('clarity', clarity)
+        if (cut !== 'all-cuts') params.append('cut', cut)
+        params.append('caratMin', String(caratRange[0]))
+        params.append('caratMax', String(caratRange[1]))
+        params.append('priceMin', String(priceRange[0]))
+        params.append('priceMax', String(priceRange[1]))
+        if (labGrown) params.append('labGrown', 'true')
+
+        console.log('[UI] Fetching diamonds with query:', params.toString())
+
+        const response = await fetch(`/api/diamonds?${params.toString()}`)
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch diamonds')
+        }
+
+        console.log('[UI] Received diamonds:', data.count)
+        setDiamonds(data.diamonds || [])
+        setFilteredDiamonds(data.diamonds || [])
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        console.error('[UI] Error fetching diamonds:', message)
+        setError(message)
+        setDiamonds([])
+        setFilteredDiamonds([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDiamonds()
   }, [shape, color, clarity, cut, priceRange, caratRange, labGrown])
 
-  const handleSelectDiamond = (diamond: typeof MOCK_DIAMONDS[0]) => {
+  const handleSelectDiamond = (diamond: NivodaDiamond) => {
     setSelectedDiamond(diamond.id)
     updateRing({
       diamond,
@@ -281,10 +251,29 @@ export default function ChooseDiamond() {
               </Button>
             </div>
 
+            {/* Error State */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+                <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
+                <div>
+                  <p className="font-semibold text-red-900">Error loading diamonds</p>
+                  <p className="text-red-800 text-sm">{error}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Spinner className="mb-4" />
+                <p className="text-foreground/70">Loading diamonds...</p>
+              </div>
+            )}
+
             {/* Diamonds Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {diamonds.length > 0 ? (
-                diamonds.map((diamond) => (
+            {!loading && filteredDiamonds.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredDiamonds.map((diamond) => (
                   <Card
                     key={diamond.id}
                     className={`p-6 cursor-pointer transition border-2 ${
@@ -294,8 +283,29 @@ export default function ChooseDiamond() {
                     }`}
                     onClick={() => handleSelectDiamond(diamond)}
                   >
-                    <div className="aspect-square bg-muted rounded-lg mb-6 flex items-center justify-center">
-                      <span className="text-muted-foreground text-sm">[Diamond Image]</span>
+                    {/* Diamond Image or Video Placeholder */}
+                    <div className="aspect-square bg-muted rounded-lg mb-6 flex items-center justify-center overflow-hidden">
+                      {diamond.image_url ? (
+                        <img
+                          src={diamond.image_url}
+                          alt={`${diamond.shape} diamond ${diamond.carat}ct`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : diamond.video_url ? (
+                        <div className="text-center">
+                          <p className="text-muted-foreground text-sm mb-2">Video Available</p>
+                          <a
+                            href={diamond.video_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline text-xs"
+                          >
+                            View Video
+                          </a>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">[Diamond {diamond.id}]</span>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -340,13 +350,17 @@ export default function ChooseDiamond() {
                       </div>
                     </div>
                   </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-lg text-foreground/70">No diamonds match your filters</p>
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && filteredDiamonds.length === 0 && !error && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-lg text-foreground/70">No diamonds match your filters</p>
+                <p className="text-sm text-foreground/50 mt-2">Try adjusting your search criteria</p>
+              </div>
+            )}
 
             {/* Navigation */}
             <div className="flex justify-between items-center mt-12 pt-8 border-t border-border">
