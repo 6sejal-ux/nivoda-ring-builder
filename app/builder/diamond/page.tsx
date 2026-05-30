@@ -88,10 +88,10 @@ export default function ChooseDiamond() {
   const [showFilters, setShowFilters] = useState(true)
 
   // Filters
-  const [shape, setShape] = useState<string>('')
-  const [color, setColor] = useState<string>('')
-  const [clarity, setClarity] = useState<string>('')
-  const [cut, setCut] = useState<string>('')
+  const [shape, setShape] = useState<string>('all-shapes')
+  const [color, setColor] = useState<string>('all-colors')
+  const [clarity, setClarity] = useState<string>('all-clarities')
+  const [cut, setCut] = useState<string>('all-cuts')
   const [priceRange, setPriceRange] = useState<[number, number]>([3000, 15000])
   const [caratRange, setCaratRange] = useState<[number, number]>([0.5, 3.0])
   const [labGrown, setLabGrown] = useState(false)
@@ -99,10 +99,10 @@ export default function ChooseDiamond() {
   useEffect(() => {
     // Filter diamonds based on selected criteria
     let filtered = MOCK_DIAMONDS.filter((diamond) => {
-      if (shape && diamond.shape !== shape) return false
-      if (color && diamond.color !== color) return false
-      if (clarity && diamond.clarity !== clarity) return false
-      if (cut && diamond.cut !== cut) return false
+      if (shape !== 'all-shapes' && diamond.shape !== shape) return false
+      if (color !== 'all-colors' && diamond.color !== color) return false
+      if (clarity !== 'all-clarities' && diamond.clarity !== clarity) return false
+      if (cut !== 'all-cuts' && diamond.cut !== cut) return false
       if (diamond.price < priceRange[0] || diamond.price > priceRange[1]) return false
       if (diamond.carat < caratRange[0] || diamond.carat > caratRange[1]) return false
       if (labGrown && !diamond.lab_grown) return false
@@ -152,7 +152,7 @@ export default function ChooseDiamond() {
                       <SelectValue placeholder="All shapes" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All shapes</SelectItem>
+                      <SelectItem value="all-shapes">All shapes</SelectItem>
                       {SHAPES.map((s) => (
                         <SelectItem key={s} value={s}>
                           {s}
@@ -170,7 +170,7 @@ export default function ChooseDiamond() {
                       <SelectValue placeholder="All colors" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All colors</SelectItem>
+                      <SelectItem value="all-colors">All colors</SelectItem>
                       {COLORS.map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
@@ -188,7 +188,7 @@ export default function ChooseDiamond() {
                       <SelectValue placeholder="All clarities" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All clarities</SelectItem>
+                      <SelectItem value="all-clarities">All clarities</SelectItem>
                       {CLARITY.map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
@@ -206,7 +206,7 @@ export default function ChooseDiamond() {
                       <SelectValue placeholder="All cuts" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All cuts</SelectItem>
+                      <SelectItem value="all-cuts">All cuts</SelectItem>
                       {CUTS.map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
