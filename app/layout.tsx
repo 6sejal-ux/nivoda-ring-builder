@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { RingProvider } from '@/lib/ring-context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'Southern Star Diamonds - Custom Engagement Ring Builder',
+  description: 'Build your perfect custom engagement ring with our luxury ring builder. Choose from premium diamonds and stunning settings.',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -35,9 +36,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-background">
       <body className="font-sans antialiased">
-        {children}
+        <RingProvider>
+          {children}
+        </RingProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
