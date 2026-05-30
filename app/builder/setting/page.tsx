@@ -10,31 +10,31 @@ const SETTINGS = [
   {
     id: 'solitaire',
     name: 'Solitaire',
-    description: 'Classic single stone setting, emphasizing the beauty of your diamond',
+    image: '/rings/solitaire.jpg',
     basePrice: 1200,
   },
   {
     id: 'halo',
     name: 'Halo',
-    description: 'Diamond surrounded by smaller stones for added brilliance',
+    image: '/rings/halo.jpg',
     basePrice: 1800,
   },
   {
     id: 'hidden-halo',
     name: 'Hidden Halo',
-    description: 'Subtle halo beneath the center stone for understated elegance',
+    image: '/rings/hidden-halo.jpg',
     basePrice: 1600,
   },
   {
     id: 'trilogy',
-    name: 'Trilogy',
-    description: 'Three stone design symbolizing past, present, and future',
+    name: 'Three Stone',
+    image: '/rings/trilogy.jpg',
     basePrice: 2000,
   },
   {
     id: 'vintage',
     name: 'Vintage',
-    description: 'Ornate vintage-inspired setting with intricate details',
+    image: '/rings/vintage.jpg',
     basePrice: 2200,
   },
 ]
@@ -50,87 +50,162 @@ export default function ChooseSetting() {
   }
 
   return (
-    <main className="min-h-screen bg-background py-12 md:py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-5xl md:text-6xl font-serif font-bold text-primary mb-4">
-            Choose Your Setting
+    <main className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+
+        {/* PAGE TITLE */}
+
+        <div className="mb-16">
+          <h1 className="text-5xl lg:text-7xl font-serif text-primary mb-4">
+            Engagement Rings
           </h1>
-          <p className="text-lg text-foreground/70 max-w-2xl">
-            Select the perfect setting for your engagement ring. Each setting can be customized to your preferences.
+
+          <p className="text-lg text-gray-500 max-w-3xl">
+            Explore our handcrafted engagement ring settings and
+            customise your perfect ring with a certified diamond.
           </p>
         </div>
 
-        {/* Settings Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {/* FILTERS */}
+
+        <div className="space-y-12 mb-16 border-b pb-12">
+
+          {/* SETTING STYLE */}
+
+          <div>
+            <h3 className="uppercase tracking-[0.25em] text-xs mb-6 font-semibold">
+              Setting Style
+            </h3>
+
+            <div className="flex flex-wrap gap-3">
+              {SETTINGS.map((setting) => (
+                <button
+                  key={setting.id}
+                  onClick={() => handleSelectSetting(setting)}
+                  className={`px-5 py-2 border rounded-full text-sm transition ${
+                    ring.setting === setting.id
+                      ? 'bg-black text-white border-black'
+                      : 'border-gray-300 hover:border-black'
+                  }`}
+                >
+                  {setting.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* SHAPE */}
+
+          <div>
+            <h3 className="uppercase tracking-[0.25em] text-xs mb-6 font-semibold">
+              Shape
+            </h3>
+
+            <div className="flex flex-wrap gap-3">
+              {[
+                'Round',
+                'Oval',
+                'Pear',
+                'Emerald',
+                'Princess',
+                'Cushion',
+              ].map((shape) => (
+                <div
+                  key={shape}
+                  className="px-5 py-2 border border-gray-300 rounded-full text-sm"
+                >
+                  {shape}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* METAL */}
+
+          <div>
+            <h3 className="uppercase tracking-[0.25em] text-xs mb-6 font-semibold">
+              Metal
+            </h3>
+
+            <div className="flex flex-wrap gap-3">
+              {[
+                'White Gold',
+                'Yellow Gold',
+                'Rose Gold',
+                'Platinum',
+              ].map((metal) => (
+                <div
+                  key={metal}
+                  className="px-5 py-2 border border-gray-300 rounded-full text-sm"
+                >
+                  {metal}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* PRODUCT GRID */}
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+
           {SETTINGS.map((setting) => (
             <Card
               key={setting.id}
-              className={`p-8 border-2 cursor-pointer transition transform hover:scale-105 ${
-                ring.setting === setting.id
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/50'
-              }`}
               onClick={() => handleSelectSetting(setting)}
+              className={`border-0 shadow-none cursor-pointer group ${
+                ring.setting === setting.id
+                  ? 'ring-2 ring-black'
+                  : ''
+              }`}
             >
-              <div className="aspect-square bg-muted rounded-lg mb-6 flex items-center justify-center">
-                <span className="text-muted-foreground text-sm">[Setting Image]</span>
+              <div className="aspect-square bg-gray-100 mb-5 overflow-hidden">
+                <img
+                  src={setting.image}
+                  alt={setting.name}
+                  className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      'https://placehold.co/600x600?text=Ring'
+                  }}
+                />
               </div>
-              
-              <h3 className="text-2xl font-serif font-bold text-primary mb-2">
+
+              <h3 className="font-serif text-2xl mb-2">
                 {setting.name}
               </h3>
-              <p className="text-foreground/70 text-sm mb-6 min-h-[3rem]">
-                {setting.description}
+
+              <p className="text-sm text-gray-500 mb-3">
+                From AUD ${setting.basePrice.toLocaleString()}
               </p>
-              
-              <div className="border-t border-border pt-4 flex items-end justify-between">
-                <div>
-                  <p className="text-xs text-foreground/60 mb-1">Starting from</p>
-                  <p className="text-2xl font-bold text-primary">${setting.basePrice.toLocaleString()}</p>
-                </div>
-                {ring.setting === setting.id && (
-                  <div className="text-primary">✓ Selected</div>
-                )}
+
+              <div className="text-sm font-medium">
+                View Ring →
               </div>
             </Card>
           ))}
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center pt-8 border-t border-border">
-          <Link href="/">
-            <Button variant="outline" className="px-6 py-2">
-              Back to Home
-            </Button>
-          </Link>
-          
+        {/* CONTINUE */}
+
+        <div className="mt-20 border-t pt-10 flex justify-end">
           {ring.setting ? (
             <Link href="/builder/diamond">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
-                Next: Choose Diamond
-                <ChevronRight size={20} />
+              <Button className="bg-black hover:bg-black/90 text-white px-8 py-6">
+                Continue To Diamonds
+                <ChevronRight className="ml-2" size={18} />
               </Button>
             </Link>
           ) : (
             <Button
               disabled
-              className="bg-primary/50 text-white px-6 py-2 flex items-center gap-2"
+              className="px-8 py-6"
             >
-              Next: Choose Diamond
-              <ChevronRight size={20} />
+              Select A Setting
             </Button>
           )}
         </div>
 
-        {/* Progress Indicator */}
-        <div className="flex gap-2 mt-12 justify-center">
-          <div className="w-2 h-2 rounded-full bg-primary"></div>
-          <div className={`w-2 h-2 rounded-full ${ring.setting ? 'bg-primary' : 'bg-muted'}`}></div>
-          <div className="w-2 h-2 rounded-full bg-muted"></div>
-          <div className="w-2 h-2 rounded-full bg-muted"></div>
-        </div>
       </div>
     </main>
   )
