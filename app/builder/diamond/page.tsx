@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Slider } from '@/components/ui/slider'
@@ -12,13 +11,28 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useRing } from '@/lib/ring-context'
 import { ChevronRight, Filter } from 'lucide-react'
 
+interface Diamond {
+  id: string
+  shape: string
+  carat: number
+  color: string
+  clarity: string
+  cut: string
+  lab_grown: boolean
+  price: number
+  image_url?: string
+  video_url?: string
+  certificate_url?: string
+  [key: string]: any
+}
+
 const SHAPES = ['Round', 'Princess', 'Cushion', 'Emerald', 'Oval', 'Pear', 'Radiant']
 const COLORS = ['D', 'E', 'F', 'G', 'H', 'I', 'J']
 const CLARITY = ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2']
 const CUTS = ['Excellent', 'Very Good', 'Good', 'Fair']
 
-// Mock diamond data - will be replaced with API call
-const MOCK_DIAMONDS = [
+// Mock diamond data - used as fallback if API fails
+const MOCK_DIAMONDS: Diamond[] = [
   {
     id: '1',
     shape: 'Round',
@@ -83,9 +97,11 @@ const MOCK_DIAMONDS = [
 
 export default function ChooseDiamond() {
   const { ring, updateRing } = useRing()
-  const [diamonds, setDiamonds] = useState(MOCK_DIAMONDS)
+  const [diamonds, setDiamonds] = useState<typeof MOCK_DIAMONDS>([])
   const [selectedDiamond, setSelectedDiamond] = useState<string | null>(ring.diamond?.id || null)
   const [showFilters, setShowFilters] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Filters
   const [shape, setShape] = useState<string>('all-shapes')
@@ -96,23 +112,47 @@ export default function ChooseDiamond() {
   const [caratRange, setCaratRange] = useState<[number, number]>([0.5, 3.0])
   const [labGrown, setLabGrown] = useState(false)
 
+  // Fetch diamonds from API
   useEffect(() => {
-    // Filter diamonds based on selected criteria
-    let filtered = MOCK_DIAMONDS.filter((diamond) => {
-      if (shape !== 'all-shapes' && diamond.shape !== shape) return false
-      if (color !== 'all-colors' && diamond.color !== color) return false
-      if (clarity !== 'all-clarities' && diamond.clarity !== clarity) return false
-      if (cut !== 'all-cuts' && diamond.cut !== cut) return false
-      if (diamond.price < priceRange[0] || diamond.price > priceRange[1]) return false
-      if (diamond.carat < caratRange[0] || diamond.carat > caratRange[1]) return false
-      if (labGrown && !diamond.lab_grown) return false
-      return true
-    })
+    const fetchDiamonds = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-    setDiamonds(filtered)
+        const params = new URLSearchParams()
+        if (shape !== 'all-shapes') params.append('shape', shape)
+        if (color !== 'all-colors') params.append('color', color)
+        if (clarity !== 'all-clarities') params.append('clarity', clarity)
+        if (cut !== 'all-cuts') params.append('cut', cut)
+        params.append('caratMin', caratRange[0].toString())
+        params.append('caratMax', caratRange[1].toString())
+        params.append('priceMin', priceRange[0].toString())
+        params.append('priceMax', priceRange[1].toString())
+        if (labGrown) params.append('labGrown', 'true')
+
+        const response = await fetch(`/api/diamonds?${params.toString()}`)
+        const data = await response.json()
+
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to fetch diamonds')
+        }
+
+        console.log('[v0] Received diamonds:', data.diamonds?.length)
+        setDiamonds(data.diamonds || [])
+      } catch (err) {
+        console.error('[v0] Error fetching diamonds:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load diamonds')
+        // Fall back to mock data
+        setDiamonds(MOCK_DIAMONDS)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDiamonds()
   }, [shape, color, clarity, cut, priceRange, caratRange, labGrown])
 
-  const handleSelectDiamond = (diamond: typeof MOCK_DIAMONDS[0]) => {
+  const handleSelectDiamond = (diamond: Diamond) => {
     setSelectedDiamond(diamond.id)
     updateRing({
       diamond,
@@ -283,7 +323,19 @@ export default function ChooseDiamond() {
 
             {/* Diamonds Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {diamonds.length > 0 ? (
+              {loading ? (
+                <div className="col-span-full text-center py-12">
+                  <div className="inline-block">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                  </div>
+                  <p className="text-foreground/70 mt-4">Loading diamonds...</p>
+                </div>
+              ) : error ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-red-600 mb-4">{error}</p>
+                  <p className="text-foreground/70 text-sm">Showing cached diamonds. Please try again.</p>
+                </div>
+              ) : diamonds.length > 0 ? (
                 diamonds.map((diamond) => (
                   <Card
                     key={diamond.id}
@@ -294,8 +346,25 @@ export default function ChooseDiamond() {
                     }`}
                     onClick={() => handleSelectDiamond(diamond)}
                   >
-                    <div className="aspect-square bg-muted rounded-lg mb-6 flex items-center justify-center">
-                      <span className="text-muted-foreground text-sm">[Diamond Image]</span>
+                    {/* Diamond Image/Video */}
+                    <div className="aspect-square bg-muted rounded-lg mb-6 flex items-center justify-center overflow-hidden">
+                      {diamond.video_url ? (
+                        <video 
+                          src={diamond.video_url} 
+                          className="w-full h-full object-cover" 
+                          autoPlay 
+                          muted 
+                          loop 
+                        />
+                      ) : diamond.image_url ? (
+                        <img 
+                          src={diamond.image_url} 
+                          alt={`${diamond.shape} diamond`}
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <span className="text-muted-foreground text-sm">[Diamond Image]</span>
+                      )}
                     </div>
 
                     <div className="space-y-3">
@@ -329,6 +398,20 @@ export default function ChooseDiamond() {
                           <p className="font-semibold text-sm">{diamond.cut}</p>
                         </div>
                       </div>
+
+                      {/* Certificate */}
+                      {diamond.certificate_url && (
+                        <div className="pt-3 border-t border-border">
+                          <a 
+                            href={diamond.certificate_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                          >
+                            View Certificate
+                          </a>
+                        </div>
+                      )}
 
                       <div className="border-t border-border pt-4 mt-4 flex items-end justify-between">
                         <div>
