@@ -356,15 +356,22 @@ export default function ChooseDiamond() {
                 </Button>
               </Link>
 
-              <Link href={selectedDiamond ? '/builder/diamond-detail' : '#'}>
+              {selectedDiamond ? (
+                <Link href="/builder/review">
+                  <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
+                    Continue to Review
+                    <ChevronRight size={20} />
+                  </Button>
+                </Link>
+              ) : (
                 <Button
-                  disabled={!selectedDiamond}
-                  className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2"
+                  disabled
+                  className="bg-primary/50 text-white px-6 py-2 flex items-center gap-2"
                 >
-                  View Diamond Details
+                  Continue to Review
                   <ChevronRight size={20} />
                 </Button>
-              </Link>
+              )}
             </div>
 
             {/* Progress Indicator */}

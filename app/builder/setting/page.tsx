@@ -106,15 +106,22 @@ export default function ChooseSetting() {
             </Button>
           </Link>
           
-          <Link href={ring.setting ? '/builder/diamond' : '#'}>
+          {ring.setting ? (
+            <Link href="/builder/diamond">
+              <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
+                Next: Choose Diamond
+                <ChevronRight size={20} />
+              </Button>
+            </Link>
+          ) : (
             <Button
-              disabled={!ring.setting}
-              className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2"
+              disabled
+              className="bg-primary/50 text-white px-6 py-2 flex items-center gap-2"
             >
               Next: Choose Diamond
               <ChevronRight size={20} />
             </Button>
-          </Link>
+          )}
         </div>
 
         {/* Progress Indicator */}
