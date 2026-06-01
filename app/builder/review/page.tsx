@@ -6,26 +6,10 @@ import { Card } from '@/components/ui/card'
 import { useRing } from '@/lib/ring-context'
 import { ShoppingCart, Edit2 } from 'lucide-react'
 
-const SETTING_NAMES: Record<string, string> = {
-  'solitaire': 'Solitaire Setting',
-  'halo': 'Halo Setting',
-  'hidden-halo': 'Hidden Halo Setting',
-  'trilogy': 'Trilogy Setting',
-  'vintage': 'Vintage Setting',
-}
-
-const SETTING_PRICES: Record<string, number> = {
-  'solitaire': 1200,
-  'halo': 1800,
-  'hidden-halo': 1600,
-  'trilogy': 2000,
-  'vintage': 2200,
-}
-
 export default function ReviewRing() {
   const { ring, resetRing } = useRing()
 
-  if (!ring.setting || !ring.diamond) {
+  if (!ring.selectedSetting || !ring.selectedDiamond) {
     return (
       <main className="min-h-screen bg-background py-12 md:py-20 flex items-center justify-center">
         <div className="text-center">
@@ -41,13 +25,14 @@ export default function ReviewRing() {
     )
   }
 
-  const settingPrice = SETTING_PRICES[ring.setting] || 1200
-  const diamondPrice = ring.diamond.price
-  const totalPrice = settingPrice + diamondPrice
-
   const handleAddToCart = () => {
-    // TODO: Implement add to cart functionality
-    console.log('Adding to cart:', { setting: ring.setting, diamond: ring.diamond })
+    // TODO: Implement add to cart functionality with Shopify
+    console.log('Adding to cart:', { 
+      setting: ring.selectedSetting?.handle, 
+      diamond: ring.selectedDiamond?.handle,
+      metal: ring.selectedMetal,
+      total: ring.totalPrice
+    })
   }
 
   return (
@@ -72,10 +57,10 @@ export default function ReviewRing() {
           <div className="text-center">
             <p className="text-sm text-foreground/60 uppercase mb-2">Your Selection</p>
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-primary mb-2">
-              {SETTING_NAMES[ring.setting]}
+              {ring.selectedSetting?.title}
             </h2>
             <p className="text-lg text-foreground/70">
-              with {ring.diamond.carat}ct {ring.diamond.shape} Diamond ({ring.diamond.color}/{ring.diamond.clarity})
+              in {ring.selectedMetal} with {ring.selectedDiamond?.title}
             </p>
           </div>
         </Card>
@@ -88,7 +73,7 @@ export default function ReviewRing() {
               <div>
                 <p className="text-sm text-foreground/60 uppercase mb-1">Setting</p>
                 <h3 className="text-2xl font-serif font-bold text-primary">
-                  {SETTING_NAMES[ring.setting]}
+                  {ring.selectedSetting?.title}
                 </h3>
               </div>
               <Link href="/builder/setting">
@@ -105,7 +90,7 @@ export default function ReviewRing() {
 
             <div className="border-t border-border pt-6">
               <p className="text-sm text-foreground/60 uppercase mb-2">Price</p>
-              <p className="text-3xl font-bold text-primary">${settingPrice.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-primary">${ring.settingPrice.toLocaleString()}</p>
             </div>
           </Card>
 
@@ -115,7 +100,7 @@ export default function ReviewRing() {
               <div>
                 <p className="text-sm text-foreground/60 uppercase mb-1">Diamond</p>
                 <h3 className="text-2xl font-serif font-bold text-primary">
-                  {ring.diamond.carat}ct {ring.diamond.shape}
+                  {ring.selectedDiamond?.title}
                 </h3>
               </div>
               <Link href="/builder/diamond">
@@ -130,20 +115,9 @@ export default function ReviewRing() {
               <span className="text-muted-foreground text-sm">[Diamond Image]</span>
             </div>
 
-            <div className="space-y-3 border-t border-border pt-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-foreground/60">Color: {ring.diamond.color}</span>
-                <span className="font-semibold">Clarity: {ring.diamond.clarity}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-foreground/60">Cut: {ring.diamond.cut}</span>
-                <span className="font-semibold">{ring.diamond.lab_grown ? 'Lab Grown' : 'Natural'}</span>
-              </div>
-            </div>
-
-            <div className="border-t border-border mt-6 pt-6">
+            <div className="border-t border-border pt-6">
               <p className="text-sm text-foreground/60 uppercase mb-2">Price</p>
-              <p className="text-3xl font-bold text-primary">${diamondPrice.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-primary">${ring.diamondPrice.toLocaleString()}</p>
             </div>
           </Card>
         </div>
@@ -154,18 +128,18 @@ export default function ReviewRing() {
           
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-foreground/70">{SETTING_NAMES[ring.setting]}</span>
-              <span className="font-semibold">${settingPrice.toLocaleString()}</span>
+              <span className="text-foreground/70">{ring.selectedSetting?.title}</span>
+              <span className="font-semibold">${ring.settingPrice.toLocaleString()}</span>
             </div>
             
             <div className="flex justify-between items-center">
-              <span className="text-foreground/70">{ring.diamond.carat}ct {ring.diamond.shape} Diamond</span>
-              <span className="font-semibold">${diamondPrice.toLocaleString()}</span>
+              <span className="text-foreground/70">{ring.selectedDiamond?.title}</span>
+              <span className="font-semibold">${ring.diamondPrice.toLocaleString()}</span>
             </div>
 
             <div className="border-t-2 border-primary pt-4 mt-4 flex justify-between items-center">
               <span className="text-lg font-serif font-bold text-primary">Total</span>
-              <span className="text-3xl font-bold text-primary">${totalPrice.toLocaleString()}</span>
+              <span className="text-3xl font-bold text-primary">${ring.totalPrice.toLocaleString()}</span>
             </div>
           </div>
         </Card>

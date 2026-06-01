@@ -5,48 +5,86 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { useRing } from '@/lib/ring-context'
 import { ChevronRight } from 'lucide-react'
+import type { ShopifyProduct } from '@/lib/shopify'
 
-const SETTINGS = [
+const SETTINGS: ShopifyProduct[] = [
   {
     id: 'solitaire',
-    name: 'Solitaire',
+    handle: 'solitaire-setting',
+    title: 'Solitaire',
     description: 'Classic single stone setting, emphasizing the beauty of your diamond',
-    basePrice: 1200,
+    vendor: 'Ring Settings',
+    tags: ['setting:solitaire', 'collection:settings'],
+    priceRange: {
+      minVariantPrice: { amount: '1200', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '2200', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: 'halo',
-    name: 'Halo',
+    handle: 'halo-setting',
+    title: 'Halo',
     description: 'Diamond surrounded by smaller stones for added brilliance',
-    basePrice: 1800,
+    vendor: 'Ring Settings',
+    tags: ['setting:halo', 'collection:settings'],
+    priceRange: {
+      minVariantPrice: { amount: '1800', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '2800', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: 'hidden-halo',
-    name: 'Hidden Halo',
+    handle: 'hidden-halo-setting',
+    title: 'Hidden Halo',
     description: 'Subtle halo beneath the center stone for understated elegance',
-    basePrice: 1600,
+    vendor: 'Ring Settings',
+    tags: ['setting:hidden-halo', 'collection:settings'],
+    priceRange: {
+      minVariantPrice: { amount: '1600', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '2600', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: 'trilogy',
-    name: 'Trilogy',
+    handle: 'trilogy-setting',
+    title: 'Trilogy',
     description: 'Three stone design symbolizing past, present, and future',
-    basePrice: 2000,
+    vendor: 'Ring Settings',
+    tags: ['setting:trilogy', 'collection:settings'],
+    priceRange: {
+      minVariantPrice: { amount: '2000', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '3000', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: 'vintage',
-    name: 'Vintage',
+    handle: 'vintage-setting',
+    title: 'Vintage',
     description: 'Ornate vintage-inspired setting with intricate details',
-    basePrice: 2200,
+    vendor: 'Ring Settings',
+    tags: ['setting:vintage', 'collection:settings'],
+    priceRange: {
+      minVariantPrice: { amount: '2200', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '3200', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
 ]
 
 export default function ChooseSetting() {
-  const { ring, updateRing } = useRing()
+  const { ring, setSetting } = useRing()
 
-  const handleSelectSetting = (setting: typeof SETTINGS[0]) => {
-    updateRing({
-      setting: setting.id,
-      totalPrice: (ring.diamond?.price ?? 0) + setting.basePrice,
-    })
+  const handleSelectSetting = (setting: ShopifyProduct) => {
+    setSetting(setting)
   }
 
   return (
@@ -68,7 +106,7 @@ export default function ChooseSetting() {
             <Card
               key={setting.id}
               className={`p-8 border-2 cursor-pointer transition transform hover:scale-105 ${
-                ring.setting === setting.id
+                ring.selectedSetting?.id === setting.id
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50'
               }`}
@@ -79,7 +117,7 @@ export default function ChooseSetting() {
               </div>
               
               <h3 className="text-2xl font-serif font-bold text-primary mb-2">
-                {setting.name}
+                {setting.title}
               </h3>
               <p className="text-foreground/70 text-sm mb-6 min-h-[3rem]">
                 {setting.description}
@@ -88,9 +126,11 @@ export default function ChooseSetting() {
               <div className="border-t border-border pt-4 flex items-end justify-between">
                 <div>
                   <p className="text-xs text-foreground/60 mb-1">Starting from</p>
-                  <p className="text-2xl font-bold text-primary">${setting.basePrice.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-primary">
+                    ${parseInt(setting.priceRange.minVariantPrice.amount).toLocaleString()}
+                  </p>
                 </div>
-                {ring.setting === setting.id && (
+                {ring.selectedSetting?.id === setting.id && (
                   <div className="text-primary">✓ Selected</div>
                 )}
               </div>
@@ -106,7 +146,7 @@ export default function ChooseSetting() {
             </Button>
           </Link>
           
-          {ring.setting ? (
+          {ring.selectedSetting ? (
             <Link href="/builder/diamond">
               <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
                 Next: Choose Diamond
@@ -127,7 +167,7 @@ export default function ChooseSetting() {
         {/* Progress Indicator */}
         <div className="flex gap-2 mt-12 justify-center">
           <div className="w-2 h-2 rounded-full bg-primary"></div>
-          <div className={`w-2 h-2 rounded-full ${ring.setting ? 'bg-primary' : 'bg-muted'}`}></div>
+          <div className={`w-2 h-2 rounded-full ${ring.selectedSetting ? 'bg-primary' : 'bg-muted'}`}></div>
           <div className="w-2 h-2 rounded-full bg-muted"></div>
           <div className="w-2 h-2 rounded-full bg-muted"></div>
         </div>

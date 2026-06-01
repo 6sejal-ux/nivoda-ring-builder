@@ -17,74 +17,100 @@ const COLORS = ['D', 'E', 'F', 'G', 'H', 'I', 'J']
 const CLARITY = ['FL', 'IF', 'VVS1', 'VVS2', 'VS1', 'VS2', 'SI1', 'SI2']
 const CUTS = ['Excellent', 'Very Good', 'Good', 'Fair']
 
-// Mock diamond data - will be replaced with API call
-const MOCK_DIAMONDS = [
+import type { ShopifyProduct } from '@/lib/shopify'
+
+// Mock diamond data transformed to ShopifyProduct structure
+const MOCK_DIAMONDS: ShopifyProduct[] = [
   {
     id: '1',
-    shape: 'Round',
-    carat: 1.0,
-    color: 'F',
-    clarity: 'VS1',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 5200,
+    handle: 'round-1-0ct-f-vs1',
+    title: '1.0ct Round F VS1 Excellent',
+    description: 'Premium round diamond',
+    vendor: 'Diamonds',
+    tags: ['shape:round', 'collection:diamonds'],
+    priceRange: {
+      minVariantPrice: { amount: '5200', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '5200', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: '2',
-    shape: 'Round',
-    carat: 1.5,
-    color: 'G',
-    clarity: 'VS2',
-    cut: 'Very Good',
-    lab_grown: false,
-    price: 8500,
+    handle: 'round-1-5ct-g-vs2',
+    title: '1.5ct Round G VS2 Very Good',
+    description: 'Beautiful round diamond',
+    vendor: 'Diamonds',
+    tags: ['shape:round', 'collection:diamonds'],
+    priceRange: {
+      minVariantPrice: { amount: '8500', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '8500', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: '3',
-    shape: 'Princess',
-    carat: 1.0,
-    color: 'F',
-    clarity: 'VVS2',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 5800,
+    handle: 'princess-1-0ct-f-vvs2',
+    title: '1.0ct Princess F VVS2 Excellent',
+    description: 'Elegant princess cut diamond',
+    vendor: 'Diamonds',
+    tags: ['shape:princess', 'collection:diamonds'],
+    priceRange: {
+      minVariantPrice: { amount: '5800', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '5800', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: '4',
-    shape: 'Cushion',
-    carat: 1.2,
-    color: 'E',
-    clarity: 'VS1',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 6200,
+    handle: 'cushion-1-2ct-e-vs1',
+    title: '1.2ct Cushion E VS1 Excellent',
+    description: 'Stunning cushion cut diamond',
+    vendor: 'Diamonds',
+    tags: ['shape:cushion', 'collection:diamonds'],
+    priceRange: {
+      minVariantPrice: { amount: '6200', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '6200', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: '5',
-    shape: 'Round',
-    carat: 2.0,
-    color: 'H',
-    clarity: 'SI1',
-    cut: 'Very Good',
-    lab_grown: true,
-    price: 8900,
+    handle: 'round-2-0ct-h-si1-lab',
+    title: '2.0ct Round H SI1 Lab Grown',
+    description: 'Lab grown round diamond',
+    vendor: 'Diamonds',
+    tags: ['shape:round', 'lab-grown', 'collection:diamonds'],
+    priceRange: {
+      minVariantPrice: { amount: '8900', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '8900', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
   {
     id: '6',
-    shape: 'Oval',
-    carat: 1.5,
-    color: 'G',
-    clarity: 'VVS1',
-    cut: 'Excellent',
-    lab_grown: false,
-    price: 9200,
+    handle: 'oval-1-5ct-g-vvs1',
+    title: '1.5ct Oval G VVS1 Excellent',
+    description: 'Radiant oval diamond',
+    vendor: 'Diamonds',
+    tags: ['shape:oval', 'collection:diamonds'],
+    priceRange: {
+      minVariantPrice: { amount: '9200', currencyCode: 'USD' },
+      maxVariantPrice: { amount: '9200', currencyCode: 'USD' },
+    },
+    media: [],
+    variants: [],
   },
 ]
 
 export default function ChooseDiamond() {
-  const { ring, updateRing } = useRing()
+  const { ring, setDiamond } = useRing()
   const [diamonds, setDiamonds] = useState(MOCK_DIAMONDS)
-  const [selectedDiamond, setSelectedDiamond] = useState<string | null>(ring.diamond?.id || null)
+  const [selectedDiamondId, setSelectedDiamondId] = useState<string | null>(ring.selectedDiamond?.id || null)
   const [showFilters, setShowFilters] = useState(true)
 
   // Filters
@@ -112,12 +138,9 @@ export default function ChooseDiamond() {
     setDiamonds(filtered)
   }, [shape, color, clarity, cut, priceRange, caratRange, labGrown])
 
-  const handleSelectDiamond = (diamond: typeof MOCK_DIAMONDS[0]) => {
-    setSelectedDiamond(diamond.id)
-    updateRing({
-      diamond,
-      totalPrice: diamond.price + (ring.setting ? 1200 : 0), // Base setting price
-    })
+  const handleSelectDiamond = (diamond: ShopifyProduct) => {
+    setSelectedDiamondId(diamond.id)
+    setDiamond(diamond)
   }
 
   return (
@@ -288,7 +311,7 @@ export default function ChooseDiamond() {
                   <Card
                     key={diamond.id}
                     className={`p-6 cursor-pointer transition border-2 ${
-                      selectedDiamond === diamond.id
+                      selectedDiamondId === diamond.id
                         ? 'border-primary bg-primary/5'
                         : 'border-border hover:border-primary/50'
                     }`}
@@ -302,42 +325,24 @@ export default function ChooseDiamond() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-sm text-foreground/60">Shape</p>
-                          <p className="font-semibold text-primary">{diamond.shape}</p>
+                          <p className="font-semibold text-primary">{diamond.title}</p>
                         </div>
-                        {diamond.lab_grown && (
+                        {diamond.tags.includes('lab-grown') && (
                           <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                             Lab Grown
                           </span>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
-                        <div>
-                          <p className="text-xs text-foreground/60 uppercase">Carat</p>
-                          <p className="font-semibold">{diamond.carat}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-foreground/60 uppercase">Color</p>
-                          <p className="font-semibold">{diamond.color}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-foreground/60 uppercase">Clarity</p>
-                          <p className="font-semibold">{diamond.clarity}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-foreground/60 uppercase">Cut</p>
-                          <p className="font-semibold text-sm">{diamond.cut}</p>
-                        </div>
+                      <div className="border-t border-border pt-4">
+                        <p className="text-2xl font-bold text-primary">
+                          ${parseInt(diamond.priceRange.minVariantPrice.amount).toLocaleString()}
+                        </p>
                       </div>
 
-                      <div className="border-t border-border pt-4 mt-4 flex items-end justify-between">
-                        <div>
-                          <p className="text-2xl font-bold text-primary">${diamond.price.toLocaleString()}</p>
-                        </div>
-                        {selectedDiamond === diamond.id && (
-                          <div className="text-primary font-semibold">✓ Selected</div>
-                        )}
-                      </div>
+                      {selectedDiamondId === diamond.id && (
+                        <div className="text-primary font-semibold mt-2">✓ Selected</div>
+                      )}
                     </div>
                   </Card>
                 ))
@@ -356,7 +361,7 @@ export default function ChooseDiamond() {
                 </Button>
               </Link>
 
-              {selectedDiamond ? (
+              {selectedDiamondId ? (
                 <Link href="/builder/review">
                   <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
                     Continue to Review

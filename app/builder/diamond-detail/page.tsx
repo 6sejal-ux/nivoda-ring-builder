@@ -7,9 +7,9 @@ import { useRing } from '@/lib/ring-context'
 import { ChevronRight } from 'lucide-react'
 
 export default function DiamondDetail() {
-  const { ring, updateRing } = useRing()
+  const { ring } = useRing()
 
-  if (!ring.diamond) {
+  if (!ring.selectedDiamond) {
     return (
       <main className="min-h-screen bg-background py-12 md:py-20 flex items-center justify-center">
         <div className="text-center">
@@ -24,10 +24,7 @@ export default function DiamondDetail() {
     )
   }
 
-  const diamond = ring.diamond
-  const settingPrice = 1200 // Default setting price
-  const diamondPrice = diamond.price
-  const totalPrice = diamondPrice + settingPrice
+  const diamond = ring.selectedDiamond
 
   return (
     <main className="min-h-screen bg-background py-12 md:py-20">
@@ -59,10 +56,10 @@ export default function DiamondDetail() {
             {/* Header */}
             <div>
               <h1 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-2">
-                {diamond.shape} Diamond
+                {diamond.title}
               </h1>
               <p className="text-lg text-foreground/70">
-                {diamond.carat} CT | {diamond.color} Color | {diamond.clarity} Clarity
+                Premium certified diamond
               </p>
             </div>
 
@@ -70,31 +67,23 @@ export default function DiamondDetail() {
             <Card className="p-8 bg-white border border-border">
               <h2 className="text-2xl font-serif font-bold text-primary mb-6">Diamond Specifications</h2>
               
-              <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-foreground/60 uppercase mb-2">Carat Weight</p>
-                  <p className="text-3xl font-bold text-primary">{diamond.carat}</p>
+                  <p className="text-sm text-foreground/60 uppercase mb-2">Product</p>
+                  <p className="text-lg font-semibold">{diamond.title}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-foreground/60 uppercase mb-2">Color</p>
-                  <p className="text-3xl font-bold text-primary">{diamond.color}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-foreground/60 uppercase mb-2">Clarity</p>
-                  <p className="text-3xl font-bold text-primary">{diamond.clarity}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-foreground/60 uppercase mb-2">Cut</p>
-                  <p className="text-3xl font-bold text-primary">{diamond.cut}</p>
+                  <p className="text-sm text-foreground/60 uppercase mb-2">Description</p>
+                  <p className="text-foreground/70">{diamond.description}</p>
                 </div>
               </div>
 
-              <div className="border-t border-border mt-6 pt-6">
-                <p className="text-sm text-foreground/60 uppercase mb-2">Type</p>
-                <p className="text-lg font-semibold">
-                  {diamond.lab_grown ? 'Lab Grown Diamond' : 'Natural Diamond'}
-                </p>
-              </div>
+              {diamond.tags.includes('lab-grown') && (
+                <div className="border-t border-border mt-6 pt-6">
+                  <p className="text-sm text-foreground/60 uppercase mb-2">Type</p>
+                  <p className="text-lg font-semibold">Lab Grown Diamond</p>
+                </div>
+              )}
             </Card>
 
             {/* Certificate Section */}
@@ -128,15 +117,15 @@ export default function DiamondDetail() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <p className="text-sm text-foreground/60 uppercase mb-2">Diamond Price</p>
-              <p className="text-3xl font-bold text-primary">${diamondPrice.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-primary">${ring.diamondPrice.toLocaleString()}</p>
             </div>
             <div>
               <p className="text-sm text-foreground/60 uppercase mb-2">Setting Price</p>
-              <p className="text-3xl font-bold text-primary">${settingPrice.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-primary">${ring.settingPrice.toLocaleString()}</p>
             </div>
             <div className="border-t md:border-t-0 md:border-l border-border pt-6 md:pt-0 md:pl-6">
               <p className="text-sm text-foreground/60 uppercase mb-2">Estimated Total</p>
-              <p className="text-3xl font-bold text-primary">${totalPrice.toLocaleString()}</p>
+              <p className="text-3xl font-bold text-primary">${ring.totalPrice.toLocaleString()}</p>
             </div>
           </div>
         </Card>
