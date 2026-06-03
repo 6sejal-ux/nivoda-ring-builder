@@ -1,19 +1,16 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
+import type { Setting, Diamond } from './product-service'
 
 export interface RingSelection {
-  setting?: string
-  diamond?: {
-    id: string
-    shape: string
-    carat: number
-    color: string
-    clarity: string
-    cut: string
-    lab_grown: boolean
-    price: number
-  }
+  settingHandle?: string
+  settingData?: Setting
+  diamondHandle?: string
+  diamondData?: Diamond
+  metal?: string
+  settingPrice?: number
+  diamondPrice?: number
   totalPrice: number
 }
 
@@ -25,23 +22,68 @@ interface RingContextType {
 
 const RingContext = createContext<RingContextType | undefined>(undefined)
 
+const STORAGE_KEY = 'ring-builder-selection'
+
 export function RingProvider({ children }: { children: React.ReactNode }) {
   const [ring, setRing] = useState<RingSelection>({
-    setting: undefined,
-    diamond: undefined,
+    settingHandle: undefined,
+    settingData: undefined,
+    diamondHandle: undefined,
+    diamondData: undefined,
+    metal: undefined,
+    settingPrice: undefined,
+    diamondPrice: undefined,
     totalPrice: 0,
   })
 
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          setRing(parsed)
+        } catch (e) {
+          console.error('Failed to parse stored ring data:', e)
+        }
+      }
+      setIsMounted(true)
+    }
+  }, [])
+
+  // Save to localStorage whenever ring changes
+  useEffect(() => {
+    if (isMounted && typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ring))
+    }
+  }, [ring, isMounted])
+
   const updateRing = (updates: Partial<RingSelection>) => {
-    setRing((prev) => ({ ...prev, ...updates }))
+    setRing((prev) => {
+      const newRing = { ...prev, ...updates }
+      // Calculate total price
+      newRing.totalPrice = (newRing.settingPrice ?? 0) + (newRing.diamondPrice ?? 0)
+      return newRing
+    })
   }
 
   const resetRing = () => {
     setRing({
-      setting: undefined,
-      diamond: undefined,
+      settingHandle: undefined,
+      settingData: undefined,
+      diamondHandle: undefined,
+      diamondData: undefined,
+      metal: undefined,
+      settingPrice: undefined,
+      diamondPrice: undefined,
       totalPrice: 0,
     })
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY)
+    }
   }
 
   return (

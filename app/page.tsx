@@ -18,7 +18,7 @@ export default function Home() {
             <Link href="#education" className="text-foreground/70 hover:text-foreground transition">
               Learn
             </Link>
-            <Link href="/builder/setting">
+            <Link href="/build-your-ring">
               <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
                 Build Ring
               </Button>
@@ -46,7 +46,7 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-              <Link href="/builder/setting">
+              <Link href="/build-your-ring">
                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-white px-8 py-3 text-lg h-auto">
                   <Sparkles className="mr-2" size={20} />
                   Start Building Your Ring
@@ -148,7 +148,7 @@ export default function Home() {
           <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
             Start your custom ring journey now. Choose your setting, select your diamond, and see your design come to life.
           </p>
-          <Link href="/builder/setting">
+          <Link href="/build-your-ring">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 px-8 py-3 text-lg h-auto">
               Start Building Now
             </Button>
