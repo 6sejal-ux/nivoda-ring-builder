@@ -1,21 +1,32 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getSettingByHandle, getAllMetals } from '@/lib/product-service'
 import { useRing } from '@/lib/ring-context'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 export default function SettingProductDetail() {
+  const router = useRouter()
   const params = useParams()
   const handle = params.handle as string
   const setting = getSettingByHandle(handle)
   const { ring, updateRing } = useRing()
   const [selectedMetal, setSelectedMetal] = useState<string>(ring.metal || setting?.metal[0] || '')
   const [galleryIndex, setGalleryIndex] = useState(0)
+
+  const handleContinue = useCallback(() => {
+    // If diamond is already selected, go to review
+    // Otherwise, redirect to diamond selection
+    if (ring.diamondHandle) {
+      window.location.href = '/review'
+    } else {
+      window.location.href = '/diamond'
+    }
+  }, [ring.diamondHandle])
 
   if (!setting) {
     return (
@@ -171,11 +182,9 @@ export default function SettingProductDetail() {
                   Back to Settings
                 </Button>
               </Link>
-              <Link href="/review" className="flex-1">
-                <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                  Continue to Review
-                </Button>
-              </Link>
+              <Button onClick={handleContinue} className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                Continue {ring.diamondHandle ? 'to Review' : 'to Diamond'}
+              </Button>
             </div>
           </div>
         </div>

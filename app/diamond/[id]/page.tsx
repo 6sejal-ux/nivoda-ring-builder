@@ -6,13 +6,25 @@ import { Card } from '@/components/ui/card'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getDiamondByHandle } from '@/lib/product-service'
 import { useRing } from '@/lib/ring-context'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
+import { useCallback } from 'react'
 
 export default function DiamondDetail() {
+  const router = useRouter()
   const params = useParams()
   const handle = params.id as string
   const diamond = getDiamondByHandle(handle)
   const { ring, updateRing } = useRing()
+
+  const handleContinue = useCallback(() => {
+    // If setting is already selected, go to review
+    // Otherwise, redirect to setting selection
+    if (ring.settingHandle) {
+      window.location.href = '/review'
+    } else {
+      window.location.href = '/build-your-ring'
+    }
+  }, [ring.settingHandle])
 
   if (!diamond) {
     return (
@@ -150,11 +162,9 @@ export default function DiamondDetail() {
                   Back to Diamonds
                 </Button>
               </Link>
-              <Link href="/review" className="flex-1">
-                <Button className="w-full bg-primary hover:bg-primary/90 text-white">
-                  Continue to Review
-                </Button>
-              </Link>
+              <Button onClick={handleContinue} className="flex-1 bg-primary hover:bg-primary/90 text-white">
+                Continue {ring.settingHandle ? 'to Review' : 'to Settings'}
+              </Button>
             </div>
           </div>
         </div>
