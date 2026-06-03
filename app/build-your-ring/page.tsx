@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { ChevronRight, Filter } from 'lucide-react'
+import { ChevronRight, X } from 'lucide-react'
 import { SETTINGS, filterSettings, getAllMetals } from '@/lib/product-service'
 import { useRing } from '@/lib/ring-context'
 
@@ -20,6 +20,8 @@ export default function SettingCollection() {
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
   })
+
+  const hasActiveFilters = selectedMetal !== null || priceRange[0] !== 0 || priceRange[1] !== 3000
 
   return (
     <main className="min-h-screen bg-background py-12 md:py-20">
@@ -41,37 +43,32 @@ export default function SettingCollection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <div className="flex items-center gap-2 mb-6">
-                <Filter size={20} className="text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">Filters</h2>
-              </div>
-
-              {/* Metal Filter */}
-              <div className="mb-8">
-                <h3 className="font-semibold text-foreground mb-4">Metal</h3>
-                <div className="space-y-3">
+        {/* Horizontal Filters */}
+        <div className="mb-8 pb-8 border-b border-border">
+          <div className="space-y-4">
+            {/* Metal Filter - Horizontal */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-sm font-semibold text-foreground">Metal:</span>
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setSelectedMetal(null)}
-                    className={`block w-full text-left px-3 py-2 rounded-lg transition ${
+                    className={`px-4 py-2 rounded-full text-sm transition ${
                       selectedMetal === null
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-foreground/70 hover:text-foreground'
+                        ? 'bg-primary text-white'
+                        : 'bg-muted text-foreground hover:bg-muted/80'
                     }`}
                   >
-                    All Metals
+                    All
                   </button>
                   {allMetals.map((metal) => (
                     <button
                       key={metal}
                       onClick={() => setSelectedMetal(metal)}
-                      className={`block w-full text-left px-3 py-2 rounded-lg transition ${
+                      className={`px-4 py-2 rounded-full text-sm transition ${
                         selectedMetal === metal
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-foreground/70 hover:text-foreground'
+                          ? 'bg-primary text-white'
+                          : 'bg-muted text-foreground hover:bg-muted/80'
                       }`}
                     >
                       {metal}
@@ -79,132 +76,136 @@ export default function SettingCollection() {
                   ))}
                 </div>
               </div>
+            </div>
 
-              {/* Price Filter */}
-              <div className="mb-8">
-                <h3 className="font-semibold text-foreground mb-4">Price Range</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm text-foreground/70">Min: ${priceRange[0]}</label>
+            {/* Price Filter - Horizontal */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-sm font-semibold text-foreground">Price:</span>
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-foreground/70">From</label>
                     <input
-                      type="range"
+                      type="number"
                       min="0"
                       max="3000"
                       value={priceRange[0]}
                       onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                      className="w-full"
+                      className="w-20 px-2 py-1 border border-border rounded text-sm"
                     />
                   </div>
-                  <div>
-                    <label className="text-sm text-foreground/70">Max: ${priceRange[1]}</label>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-foreground/70">To</label>
                     <input
-                      type="range"
+                      type="number"
                       min="0"
                       max="3000"
                       value={priceRange[1]}
                       onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                      className="w-full"
+                      className="w-20 px-2 py-1 border border-border rounded text-sm"
                     />
                   </div>
                 </div>
               </div>
-
-              <button
-                onClick={() => {
-                  setSelectedMetal(null)
-                  setPriceRange([0, 3000])
-                }}
-                className="w-full px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/5 transition"
-              >
-                Clear Filters
-              </button>
             </div>
-          </div>
 
-          {/* Settings Grid */}
-          <div className="lg:col-span-3">
-            {filteredSettings.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-lg text-foreground/60">No settings match your filters</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredSettings.map((setting) => (
-                  <Link key={setting.id} href={`/build-your-ring/${setting.handle}`}>
-                    <Card
-                      className={`p-6 border-2 cursor-pointer transition transform hover:scale-105 h-full ${
-                        ring.settingHandle === setting.handle
-                          ? 'border-primary bg-primary/5'
-                          : 'border-border hover:border-primary/50'
-                      }`}
-                    >
-                      <div className="aspect-square bg-muted rounded-lg mb-6 flex items-center justify-center overflow-hidden">
-                        <img
-                          src={setting.image}
-                          alt={setting.name}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                            e.currentTarget.parentElement!.innerHTML = '<span class="text-muted-foreground text-sm">[Setting Image]</span>'
-                          }}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      <h3 className="text-2xl font-serif font-bold text-primary mb-2">
-                        {setting.name}
-                      </h3>
-                      <p className="text-foreground/70 text-sm mb-6 min-h-[3rem] line-clamp-3">
-                        {setting.description}
-                      </p>
-
-                      <div className="border-t border-border pt-4 flex items-end justify-between">
-                        <div>
-                          <p className="text-xs text-foreground/60 mb-1">Starting from</p>
-                          <p className="text-2xl font-bold text-primary">${setting.basePrice.toLocaleString()}</p>
-                        </div>
-                        {ring.settingHandle === setting.handle && (
-                          <div className="text-primary font-medium">✓ Selected</div>
-                        )}
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedMetal(null)
+                    setPriceRange([0, 3000])
+                  }}
+                  className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition"
+                >
+                  <X size={16} />
+                  Clear All Filters
+                </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center pt-12 border-t border-border mt-12">
-          <Link href="/">
-            <Button variant="outline" className="px-6 py-2">
-              Back to Home
-            </Button>
-          </Link>
+        {/* Settings Grid - 4-3-2 Responsive */}
+        {filteredSettings.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-lg text-foreground/60">No settings match your filters</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+            {filteredSettings.map((setting) => (
+              <Link key={setting.id} href={`/build-your-ring/${setting.handle}`}>
+                <Card
+                  className={`overflow-hidden cursor-pointer transition transform hover:shadow-lg h-full flex flex-col ${
+                    ring.settingHandle === setting.handle
+                      ? 'border-2 border-primary bg-primary/5'
+                      : 'border border-border hover:border-primary/50'
+                  }`}
+                >
+                  {/* Image - Photography Focused */}
+                  <div className="aspect-square bg-muted overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <img
+                      src={setting.image}
+                      alt={setting.name}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none'
+                        e.currentTarget.parentElement!.innerHTML = '<span class="text-muted-foreground text-sm">[Setting Image]</span>'
+                      }}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-          {ring.settingHandle ? (
-            <Link href="/build-your-ring/review">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
-                Next: Review & Checkout
-                <ChevronRight size={20} />
+                  {/* Content */}
+                  <div className="p-4 flex flex-col flex-1">
+                    <h3 className="text-xl font-serif font-bold text-primary mb-2">
+                      {setting.name}
+                    </h3>
+
+                    {/* Price at bottom */}
+                    <div className="mt-auto pt-4 border-t border-border/50">
+                      <p className="text-xs text-foreground/60 mb-1">Starting from</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg font-bold text-primary">${setting.basePrice.toLocaleString()}</p>
+                        {ring.settingHandle === setting.handle && (
+                          <div className="text-primary text-sm font-medium">✓</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Navigation */}
+        {filteredSettings.length > 0 && (
+          <div className="flex justify-between items-center pt-12 border-t border-border">
+            <Link href="/">
+              <Button variant="outline" className="px-6 py-2">
+                Back to Home
               </Button>
             </Link>
-          ) : (
-            <Button
-              disabled
-              className="bg-primary/50 text-white px-6 py-2 flex items-center gap-2"
-            >
-              Next: Review & Checkout
-              <ChevronRight size={20} />
-            </Button>
-          )}
-        </div>
 
-        {/* Progress Indicator */}
-        <div className="flex gap-2 mt-12 justify-center">
-          <div className="w-3 h-3 rounded-full bg-primary"></div>
-          <div className={`w-3 h-3 rounded-full ${ring.settingHandle ? 'bg-primary' : 'bg-muted'}`}></div>
-        </div>
+            {ring.settingHandle ? (
+              <Link href="/diamond">
+                <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-2 flex items-center gap-2">
+                  Next: Choose Diamond
+                  <ChevronRight size={20} />
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                disabled
+                className="bg-primary/50 text-white px-6 py-2 flex items-center gap-2"
+              >
+                Select a Setting First
+                <ChevronRight size={20} />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </main>
   )
